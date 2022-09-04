@@ -1,0 +1,5 @@
+sceneSetups:
+- path: Assets/Chapter6/Scene/JumpingScene.unity
+  isLoaded: 1
+  isActive: 1
+  isSubScene: 0
