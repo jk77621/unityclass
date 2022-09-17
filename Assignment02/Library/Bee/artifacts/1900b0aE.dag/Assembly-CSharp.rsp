@@ -373,6 +373,7 @@
 -r:"Library/Bee/artifacts/1900b0aE.dag/UnityEngine.UI.ref.dll"
 "Assets/Script/ArrowController.cs"
 "Assets/Script/ArrowGenerator.cs"
+"Assets/Script/ButtonController.cs"
 "Assets/Script/GameManager.cs"
 "Assets/Script/PlayerController.cs"
 -langversion:9.0
