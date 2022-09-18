@@ -28,7 +28,7 @@ public class CatPlayerController : MonoBehaviour
             animator.SetBool("JumpTrigger", true);
             rigid2D.AddForce(transform.up * jumpForce);
         }
-        else 
+        else
         {
             animator.SetBool("JumpTrigger", false);
         }
