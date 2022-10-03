@@ -114,6 +114,8 @@ public class PlayerContoller : MonoBehaviour
 
     private void OnTriggerEnter2D(Collider2D collision)
     {
+        if (bEnemy) return;
+
         switch (collision.gameObject.name)
         {
             case "Ladder":
@@ -126,18 +128,14 @@ public class PlayerContoller : MonoBehaviour
 
                 animator.SetInteger(animationState, (int)States.climb);
                 break;
-        }
-    }
-
-    void OnTriggerStay2D(Collider2D collision)
-    {
-        switch (collision.gameObject.name)
-        {
             case "eagle":
             case "eagle1":
             case "opossum":
+            case "opossum1":
+            case "flog":
+            case "flog1":
                 float nEagleX = collision.gameObject.transform.position.x;
-                float nEagleY = collision.gameObject.transform.position.y;
+                float nEagleY = collision.gameObject.transform.position.y + (collision.gameObject.GetComponent<SpriteRenderer>().bounds.size.y / 2);
                 float nPlayerX = gameObject.transform.position.x;
                 float nPlayerY = gameObject.transform.position.y;
 
@@ -146,6 +144,7 @@ public class PlayerContoller : MonoBehaviour
                 if (nPlayerY > nEagleY)
                 {
                     StartCoroutine(BouncePlayer());
+                    StartCoroutine(BlinkPlayer());
                 }
                 else
                 {
@@ -153,7 +152,7 @@ public class PlayerContoller : MonoBehaviour
                     nKey = nPlayerX > nEagleX ? 1 : -1;
 
                     StartCoroutine(BouncePlayer1());
-                    StartCoroutine(BlinkPlayer());
+                    StartCoroutine(BlinkPlayer1());
                 }
                 break;
             case "house":
@@ -178,20 +177,40 @@ public class PlayerContoller : MonoBehaviour
 
     IEnumerator BouncePlayer()
     {
-        bEnemy = false;
         rigid2D.velocity = new Vector3(0, 0, 0);
         rigid2D.AddForce(transform.up * (nJumpForce / 2));
-        yield return new WaitForSeconds(0f);
-    }
-
-    IEnumerator BouncePlayer1()
-    {
-        rigid2D.velocity = new Vector3(0, 0, 0);
         rigid2D.AddForce(transform.right * nKey * (nJumpForce / 2));
         yield return new WaitForSeconds(0f);
     }
 
     IEnumerator BlinkPlayer()
+    {
+        int count = 0;
+        while (true)
+        {
+            if (count > 1)
+            {
+                bEnemy = false;
+                break;
+            }
+
+            count++;
+
+            yield return new WaitForSeconds(.1f);
+
+            yield return new WaitForSeconds(.1f);
+        }
+    }
+
+    IEnumerator BouncePlayer1()
+    {
+        rigid2D.velocity = new Vector3(0, 0, 0);
+        rigid2D.AddForce(transform.up * (nJumpForce / 2));
+        rigid2D.AddForce(transform.right * nKey * (nJumpForce / 2));
+        yield return new WaitForSeconds(0f);
+    }
+
+    IEnumerator BlinkPlayer1()
     {
         int count = 0;
         while (true)

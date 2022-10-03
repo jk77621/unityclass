@@ -44,6 +44,8 @@ public class ItemController : MonoBehaviour
 
     void OnTriggerEnter2D(Collider2D collision)
     {
+        if (bPlayer) return;
+
         switch (collision.gameObject.name)
         {
             case "player":

@@ -45,11 +45,13 @@ public class OpossumController : MonoBehaviour
 
     void OnTriggerEnter2D(Collider2D collision)
     {
+        if (bPlayer) return;
+
         switch (collision.gameObject.name)
         {
             case "player":
                 float nPlayerY = collision.gameObject.transform.position.y;
-                float nEagleY = gameObject.transform.position.y;
+                float nEagleY = gameObject.transform.position.y + (gameObject.GetComponent<SpriteRenderer>().bounds.size.y / 2);
 
                 if (nPlayerY > nEagleY)
                 {
