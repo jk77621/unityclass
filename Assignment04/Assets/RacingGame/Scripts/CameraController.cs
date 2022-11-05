@@ -40,10 +40,9 @@ public class CameraController : MonoBehaviour
 
     private void boostFOV()
     {
-        if (Input.GetKey(KeyCode.LeftControl))
+        if (RR.nitrusFlag)
             Camera.main.fieldOfView = Mathf.Lerp(Camera.main.fieldOfView, desiredFOV, Time.deltaTime * smoothTime);
         else
             Camera.main.fieldOfView = Mathf.Lerp(Camera.main.fieldOfView, defaultFOV, Time.deltaTime * smoothTime);
-
     }
 }

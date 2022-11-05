@@ -4,18 +4,24 @@ using UnityEngine;
 
 public class CarEffects : MonoBehaviour
 {
+    public AudioSource skidClip;
+    public TrailRenderer[] tireMarks;
     public ParticleSystem[] smoke;
+    public ParticleSystem[] nitrusSmoke;
     private PlayerController controller;
-    private bool smokeFlag = false;
+    private InputManager IM;
+    private bool smokeFlag = false, tireMarksFlag;
 
     // Start is called before the first frame update
     void Start()
     {
         controller = gameObject.GetComponent<PlayerController>();
+        IM = GetComponent<InputManager>();
     }
 
     private void FixedUpdate()
     {
+        chectDrift();
         activateSmoke();
     }
 
@@ -55,5 +61,51 @@ public class CarEffects : MonoBehaviour
             smoke[i].Stop();
         }
         smokeFlag = false;
+    }
+
+    public void startNitrusEmitter()
+    {
+        if (controller.nitrusFlag) return;
+        for (int i = 0; i < nitrusSmoke.Length; i++)
+        {
+            nitrusSmoke[i].Play();
+        }
+        controller.nitrusFlag = true;
+    }
+    public void stopNitrusEmitter()
+    {
+        if (!controller.nitrusFlag) return;
+        for (int i = 0; i < nitrusSmoke.Length; i++)
+        {
+            nitrusSmoke[i].Stop();
+        }
+        controller.nitrusFlag = false;
+    }
+
+    private void chectDrift()
+    {
+        if (IM.handbrake) startEmitter();
+        else stopEmitter();
+    }
+
+    private void startEmitter()
+    {
+        if (tireMarksFlag) return;
+        foreach (TrailRenderer T in tireMarks)
+        {
+            T.emitting = true;
+        }
+        skidClip.Play();
+        tireMarksFlag = true;
+    }
+    private void stopEmitter()
+    {
+        if (!tireMarksFlag) return;
+        foreach (TrailRenderer T in tireMarks)
+        {
+            T.emitting = false;
+        }
+        skidClip.Stop();
+        tireMarksFlag = false;
     }
 }

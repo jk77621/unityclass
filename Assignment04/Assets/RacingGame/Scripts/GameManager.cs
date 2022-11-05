@@ -2,6 +2,7 @@ using System.Collections;
 using System.Collections.Generic;
 using TMPro;
 using UnityEngine;
+using UnityEngine.UI;
 
 public class GameManager : MonoBehaviour
 {
@@ -11,7 +12,8 @@ public class GameManager : MonoBehaviour
     public GameObject initPosition;
     public TextMeshProUGUI kph;
     public TextMeshProUGUI gearNum;
-    private float startPosition = 32f, endPosition= -211f;
+    public Slider nitrusSlider;
+    private float startPosition = 32f, endPosition = -211f;
     private float desiredPosition;
 
     public float vehicleSpeed;
@@ -27,17 +29,23 @@ public class GameManager : MonoBehaviour
     {
         kph.text = RR.KPH.ToString("0");
         updateNeedle();
+        nitrusUI();
     }
 
     public void updateNeedle()
     {
         desiredPosition = startPosition - endPosition;
         float temp = RR.engineRPM / 10000;
-        needle.transform.eulerAngles = new Vector3(0, 0,(startPosition - temp * desiredPosition));
+        needle.transform.eulerAngles = new Vector3(0, 0, (startPosition - temp * desiredPosition));
     }
 
     public void changeGear()
     {
         gearNum.text = RR.reverse ? "R" : RR.gearNum.ToString("0");
+    }
+
+    public void nitrusUI()
+    {
+        nitrusSlider.value = RR.nitrusValue / 45;
     }
 }

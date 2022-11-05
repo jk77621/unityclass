@@ -35,9 +35,12 @@ public class PlayerController : MonoBehaviour
 
     [HideInInspector] public bool playPauseSmoke = false;
     [HideInInspector] public bool test;
+    [HideInInspector] public float nitrusValue;
+    [HideInInspector] public bool nitrusFlag = false;
 
     private GameManager manager;
     private InputManager IM;
+    private CarEffects carEffects;
     private GameObject meshes, colliders;
     private WheelCollider[] wheels = new WheelCollider[4];
     private GameObject[] wheelMesh = new GameObject[4];
@@ -71,6 +74,7 @@ public class PlayerController : MonoBehaviour
         //getFriction();
         calculateEnginePower();
         adjustFriction();
+        activateNitrus();
     }
 
     private void calculateEnginePower()
@@ -218,6 +222,7 @@ public class PlayerController : MonoBehaviour
     {
         manager = GameObject.Find("GameManager").GetComponent<GameManager>();
         IM = GetComponent<InputManager>();
+        carEffects = GetComponent<CarEffects>();
         rigidbody = GetComponent<Rigidbody>();
         colliders = GameObject.Find("Colliders");
         meshes = GameObject.Find("Meshes");
@@ -322,5 +327,28 @@ public class PlayerController : MonoBehaviour
             yield return new WaitForSeconds(0.7f);
             radius = 6 + KPH / 20;
         }
+    }
+
+    public void activateNitrus()
+    {
+        if (!IM.boosting && nitrusValue <= 10)
+        {
+            nitrusValue += Time.deltaTime / 2;
+        }
+        else
+        {
+            nitrusValue -= (nitrusValue <= 0) ? 0 : Time.deltaTime;
+        }
+
+        if (IM.boosting)
+        {
+            if (nitrusValue > 0)
+            {
+                carEffects.startNitrusEmitter();
+                rigidbody.AddForce(transform.forward * 5000);
+            }
+            else carEffects.stopNitrusEmitter();
+        }
+        else carEffects.stopNitrusEmitter();
     }
 }
