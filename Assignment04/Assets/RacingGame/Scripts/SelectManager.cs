@@ -17,11 +17,12 @@ public class SelectManager : MonoBehaviour
 
     private void Awake()
     {
-        vehiclePointer = PlayerPrefs.GetInt("pointer");
+        //PlayerPrefs Init
         //PlayerPrefs.DeleteAll();
         PlayerPrefs.SetInt("pointer", 0);
         PlayerPrefs.SetInt("currency", 100000);
-        //currency.text = PlayerPrefs.GetInt("currency").ToString("");
+
+        vehiclePointer = PlayerPrefs.GetInt("pointer");
 
         GameObject childObject = Instantiate(listOfVehicle.vehicles[vehiclePointer], Vector3.zero, Quaternion.identity) as GameObject;
         childObject.transform.parent = toRotate.transform;
