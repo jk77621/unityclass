@@ -6,9 +6,9 @@ EditorBuildSettings:
   serializedVersion: 2
   m_Scenes:
   - enabled: 1
-    path: Assets/RacingGame/Scenes/Select.unity
-    guid: feafb38b86c3db14294761568bf63b15
-  - enabled: 1
     path: Assets/RacingGame/Scenes/Main.unity
     guid: ae251225a08f23f459c1cd7b50ee884b
+  - enabled: 1
+    path: Assets/RacingGame/Scenes/Select.unity
+    guid: feafb38b86c3db14294761568bf63b15
   m_configObjects: {}

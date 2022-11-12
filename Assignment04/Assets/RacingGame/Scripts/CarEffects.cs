@@ -15,12 +15,14 @@ public class CarEffects : MonoBehaviour
     // Start is called before the first frame update
     void Start()
     {
-        controller = gameObject.GetComponent<PlayerController>();
+        if (gameObject.tag == "AI") return;
+        controller = GetComponent<PlayerController>();
         IM = GetComponent<InputManager>();
     }
 
     private void FixedUpdate()
     {
+        if (gameObject.tag == "AI") return;
         chectDrift();
         activateSmoke();
     }

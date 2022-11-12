@@ -1,6 +1,5 @@
 using System.Collections;
 using System.Collections.Generic;
-using System.Runtime.InteropServices;
 using UnityEngine;
 using UnityEngine.SceneManagement;
 
@@ -14,33 +13,26 @@ public class PlayerController : MonoBehaviour
     }
     [SerializeField] private driveType drive;
 
-    internal enum gearBox
-    {
-        automatic,
-        manual
-    }
-    [SerializeField] private gearBox gearChange;
-
-    [Header("Variables")]
-    public float handBreakFrictionMultiplier = 2f;
-    public float totalPower;
-    public float maxRPM, minRPM;
-    public float KPH;
-    public float wheelsRPM;
-    public float engineRPM;
-    public float[] gears;
-    public int gearNum = 0;
-    public bool reverse = false;
-    public AnimationCurve enginePower;
-
-    [HideInInspector] public bool playPauseSmoke = false;
-    [HideInInspector] public bool test;
-    [HideInInspector] public float nitrusValue;
-    [HideInInspector] public bool nitrusFlag = false;
-
     private GameManager manager;
     private InputManager IM;
     private CarEffects carEffects;
+    [HideInInspector] public bool test;
+
+    [Header("Variables")]
+    public float handBrakeFrictionMultiplier = 2f;
+    public float maxRPM, minRPM;
+    public float[] gears;
+    public float[] gearChangeSpeed;
+    public AnimationCurve enginePower;
+ 
+    [HideInInspector] public int gearNum = 1;
+    [HideInInspector] public bool playPauseSmoke = false, hasFinished;
+    [HideInInspector] public float KPH;
+    [HideInInspector] public float engineRPM;
+    [HideInInspector] public bool reverse = false;
+    [HideInInspector] public float nitrusValue;
+    [HideInInspector] public bool nitrusFlag = false;
+
     private GameObject meshes, colliders;
     private WheelCollider[] wheels = new WheelCollider[4];
     private GameObject[] wheelMesh = new GameObject[4];
@@ -49,12 +41,11 @@ public class PlayerController : MonoBehaviour
 
     public int carPrice;
     public string carName;
+    private float smoothTime = 0.09f;
 
     private WheelFrictionCurve forwardFriction, sidewaysFriction;
-    private float thrust = 20000f, radius = 5, breakPower = 50000, DownForceValue = 100f, smoothTime = 0.09f;
-
-    [Header("Debug")]
-    public float[] slip = new float[4];
+    private float radius = 6, brakePower = 0, DownForceValue = 10f, wheelsRPM, driftFactor, lastValue, horizontal, vertical, totalPower;
+    private bool flag = false;
 
     private void Awake()
     {
@@ -68,11 +59,15 @@ public class PlayerController : MonoBehaviour
     {
         if (SceneManager.GetActiveScene().name == "Select") return;
 
+        horizontal = IM.horizontal;
+        vertical = IM.vertical;
+        lastValue = engineRPM;
+
         addDownForce();
         animateWheels();
         steerVehicle();
-        //getFriction();
         calculateEnginePower();
+        if (gameObject.tag == "AI") return;
         adjustFriction();
         activateNitrus();
     }
@@ -81,9 +76,30 @@ public class PlayerController : MonoBehaviour
     {
         wheelRPM();
 
-        totalPower = enginePower.Evaluate(engineRPM) * (gears[gearNum]) * IM.vertical;
+        if (vertical != 0)
+        {
+            rigidbody.drag = 0.005f;
+        }
+        if (vertical == 0)
+        {
+            rigidbody.drag = 0.1f;
+        }
+        totalPower = 3.6f * enginePower.Evaluate(engineRPM) * (vertical);
+
         float velocity = 0.0f;
-        engineRPM = Mathf.SmoothDamp(engineRPM, 1000 + (Mathf.Abs(wheelsRPM) * 3.6f * (gears[gearNum])), ref velocity, smoothTime);
+        if (engineRPM >= maxRPM || flag)
+        {
+            engineRPM = Mathf.SmoothDamp(engineRPM, maxRPM - 500, ref velocity, 0.05f);
+
+            flag = (engineRPM >= maxRPM - 450) ? true : false;
+            test = (lastValue > engineRPM) ? true : false;
+        }
+        else
+        {
+            engineRPM = Mathf.SmoothDamp(engineRPM, 1000 + (Mathf.Abs(wheelsRPM) * 3.6f * (gears[gearNum])), ref velocity, smoothTime);
+            test = false;
+        }
+        if (engineRPM >= maxRPM + 1000) engineRPM = maxRPM + 1000; // clamp at max
 
         moveVehicle();
         shifter();
@@ -103,41 +119,35 @@ public class PlayerController : MonoBehaviour
         if (wheelsRPM < 0 && !reverse)
         {
             reverse = true;
-            manager.changeGear();
+            if(gameObject.tag != "AI") manager.changeGear();
         }
         else if (wheelsRPM > 0 && reverse)
         {
             reverse = false;
-            manager.changeGear();
+            if (gameObject.tag != "AI") manager.changeGear();
         }
+    }
+
+    private bool checkGears()
+    {
+        if (KPH >= gearChangeSpeed[gearNum]) return true;
+        else return false;
     }
 
     private void shifter()
     {
         if (!isGrounded()) return;
 
-        if (gearChange == gearBox.automatic)
+        if (engineRPM > maxRPM && gearNum < gears.Length - 1 && !reverse && checkGears())
         {
-            if (engineRPM > maxRPM && gearNum < gears.Length - 1 && !reverse)
-            {
-                gearNum++;
-                manager.changeGear();
-            }
+            gearNum++;
+            if (gameObject.tag != "AI") manager.changeGear();
+            return;
         }
-        else
-        {
-            if (Input.GetKeyDown(KeyCode.E))
-            {
-                Debug.Log(gearNum);
-                gearNum++;
-                manager.changeGear();
-            }
-        }
-
         if (engineRPM < minRPM && gearNum > 0)
         {
             gearNum--;
-            manager.changeGear();
+            if (gameObject.tag != "AI") manager.changeGear();
         }
     }
 
@@ -155,35 +165,55 @@ public class PlayerController : MonoBehaviour
 
     private void moveVehicle()
     {
-        if (IM.boosting)
-        {
-            totalPower += 2000f;
-            //rigidbody.AddForce(transform.forward * thrust);
-        }
+        brakeVehicle();
 
         if (drive == driveType.allWheelDrive)
         {
-            for (int i = 0; i < wheels.Length; ++i)
+            for (int i = 0; i < wheels.Length; i++)
             {
                 wheels[i].motorTorque = totalPower / 4;
+                wheels[i].brakeTorque = brakePower;
             }
         }
         else if (drive == driveType.rearWheelDrive)
         {
-            for (int i = 2; i < wheels.Length; ++i)
+            wheels[2].motorTorque = totalPower / 2;
+            wheels[3].motorTorque = totalPower / 2;
+
+            for (int i = 0; i < wheels.Length; i++)
             {
-                wheels[i].motorTorque = (totalPower / 2);
+                wheels[i].brakeTorque = brakePower;
             }
         }
         else
         {
-            for (int i = 0; i < wheels.Length - 2; ++i)
+            wheels[0].motorTorque = totalPower / 2;
+            wheels[1].motorTorque = totalPower / 2;
+
+            for (int i = 0; i < wheels.Length; i++)
             {
-                wheels[i].motorTorque = (totalPower / 2);
+                wheels[i].brakeTorque = brakePower;
             }
         }
 
         KPH = rigidbody.velocity.magnitude * 3.6f;
+    }
+
+    private void brakeVehicle()
+    {
+
+        if (vertical < 0)
+        {
+            brakePower = (KPH >= 10) ? 500 : 0;
+        }
+        else if (vertical == 0 && (KPH <= 10 || KPH >= -10))
+        {
+            brakePower = 10;
+        }
+        else
+        {
+            brakePower = 0;
+        }
     }
 
     private void steerVehicle()
@@ -224,8 +254,8 @@ public class PlayerController : MonoBehaviour
         IM = GetComponent<InputManager>();
         carEffects = GetComponent<CarEffects>();
         rigidbody = GetComponent<Rigidbody>();
-        colliders = GameObject.Find("Colliders");
-        meshes = GameObject.Find("Meshes");
+        colliders = gameObject.transform.Find("Wheels").gameObject.transform.Find("Colliders").gameObject;
+        meshes = gameObject.transform.Find("Wheels").gameObject.transform.Find("Meshes").gameObject;
         wheels[0] = colliders.transform.Find("FrontLeftWheel").gameObject.GetComponent<WheelCollider>();
         wheels[1] = colliders.transform.Find("FrontRightWheel").gameObject.GetComponent<WheelCollider>();
         wheels[2] = colliders.transform.Find("RearLeftWheel").gameObject.GetComponent<WheelCollider>();
@@ -244,19 +274,6 @@ public class PlayerController : MonoBehaviour
         rigidbody.AddForce(-transform.up * DownForceValue * rigidbody.velocity.magnitude);
     }
 
-    private void getFriction()
-    {
-        for (int i = 0; i < wheels.Length; ++i)
-        {
-            WheelHit wheelHit;
-            wheels[i].GetGroundHit(out wheelHit);
-
-            slip[i] = wheelHit.forwardSlip;
-        }
-    }
-
-    public float driftFactor;
-
     private void adjustFriction()
     {
         float driftSmothFactor = .7f * Time.deltaTime;
@@ -268,7 +285,7 @@ public class PlayerController : MonoBehaviour
 
             float velocity = 0;
             sidewaysFriction.extremumValue = sidewaysFriction.asymptoteValue = forwardFriction.extremumValue = forwardFriction.asymptoteValue =
-                Mathf.SmoothDamp(forwardFriction.asymptoteValue, driftFactor * handBreakFrictionMultiplier, ref velocity, driftSmothFactor);
+                Mathf.SmoothDamp(forwardFriction.asymptoteValue, driftFactor * handBrakeFrictionMultiplier, ref velocity, driftSmothFactor);
 
             for (int i = 0; i < 4; i++)
             {
@@ -292,7 +309,7 @@ public class PlayerController : MonoBehaviour
             sidewaysFriction = wheels[0].sidewaysFriction;
 
             forwardFriction.extremumValue = forwardFriction.asymptoteValue = sidewaysFriction.extremumValue = sidewaysFriction.asymptoteValue =
-                ((KPH * handBreakFrictionMultiplier) / 300) + 1;
+                ((KPH * handBrakeFrictionMultiplier) / 300) + 1;
 
             for (int i = 0; i < 4; i++)
             {

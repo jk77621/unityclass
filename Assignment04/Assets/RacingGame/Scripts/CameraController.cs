@@ -10,7 +10,7 @@ public class CameraController : MonoBehaviour
     private GameObject cameraLookAt;
     private float speed = 0;
     public float defaultFOV = 0, desiredFOV = 0;
-    [Range(0, 5)] public float smoothTime = 0;
+    [Range(0, 50)] public float smoothTime = 8;
 
     private void Start()
     {
@@ -19,6 +19,7 @@ public class CameraController : MonoBehaviour
         cameraLookAt = Player.transform.Find("CameraLookAt").gameObject;
         RR = Player.GetComponent<PlayerController>();
         defaultFOV = Camera.main.fieldOfView;
+        desiredFOV = defaultFOV + 15;
     }
 
     private void FixedUpdate()
@@ -29,11 +30,7 @@ public class CameraController : MonoBehaviour
 
     private void follow()
     {
-        if (speed <= 23)
-            speed = Mathf.Lerp(speed, RR.KPH / 2, Time.deltaTime);
-        else
-            speed = 23;
-
+        speed = RR.KPH / smoothTime;
         gameObject.transform.position = Vector3.Lerp(transform.position, cameraConstraint.transform.position, Time.deltaTime * speed);
         gameObject.transform.LookAt(cameraLookAt.gameObject.transform.position);
     }
@@ -41,8 +38,8 @@ public class CameraController : MonoBehaviour
     private void boostFOV()
     {
         if (RR.nitrusFlag)
-            Camera.main.fieldOfView = Mathf.Lerp(Camera.main.fieldOfView, desiredFOV, Time.deltaTime * smoothTime);
+            Camera.main.fieldOfView = Mathf.Lerp(Camera.main.fieldOfView, desiredFOV, Time.deltaTime * 5);
         else
-            Camera.main.fieldOfView = Mathf.Lerp(Camera.main.fieldOfView, defaultFOV, Time.deltaTime * smoothTime);
+            Camera.main.fieldOfView = Mathf.Lerp(Camera.main.fieldOfView, defaultFOV, Time.deltaTime * 5);
     }
 }

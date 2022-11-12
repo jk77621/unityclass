@@ -19,8 +19,8 @@ public class SelectManager : MonoBehaviour
     {
         //PlayerPrefs Init
         //PlayerPrefs.DeleteAll();
-        PlayerPrefs.SetInt("pointer", 0);
-        PlayerPrefs.SetInt("currency", 100000);
+        //PlayerPrefs.SetInt("pointer", 0);
+        //PlayerPrefs.SetInt("currency", 100000);
 
         vehiclePointer = PlayerPrefs.GetInt("pointer");
 
