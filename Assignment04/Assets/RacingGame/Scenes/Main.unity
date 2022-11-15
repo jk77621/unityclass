@@ -855,6 +855,11 @@ MonoBehaviour:
   - {fileID: 6645616114513181105, guid: 43dc672500b44514e8373c811a8b5bbc, type: 3}
   - {fileID: 7282772008711335601, guid: a00e0c6a38d2d9947a763e2a7745c807, type: 3}
   - {fileID: 7720726507797323357, guid: 465662b94ca9634449fdf576209c31ae, type: 3}
+  - {fileID: 1833253201146048, guid: 2edc944b5d228d345b2a38ce3d76e6a3, type: 3}
+  - {fileID: 1289328962423014, guid: bd3d1591b223b8a4d9aa0ac19a3d620b, type: 3}
+  - {fileID: 1039890089086394, guid: 73739c7b76c86b64fb97af0430cc5720, type: 3}
+  - {fileID: 1216336052455082, guid: 377484f4218f217439d1996c5a300cf9, type: 3}
+  - {fileID: 1313628572427264, guid: 5de9187a3cd08344aabd3ff1a76db82b, type: 3}
 --- !u!4 &296429754
 Transform:
   m_ObjectHideFlags: 0
@@ -4043,6 +4048,10 @@ PrefabInstance:
     - target: {fileID: 4848383417384349989, guid: a00e0c6a38d2d9947a763e2a7745c807, type: 3}
       propertyPath: m_IsActive
       value: 1
+      objectReference: {fileID: 0}
+    - target: {fileID: 6493848980823480774, guid: a00e0c6a38d2d9947a763e2a7745c807, type: 3}
+      propertyPath: m_Enabled
+      value: 0
       objectReference: {fileID: 0}
     - target: {fileID: 7282772008711335601, guid: a00e0c6a38d2d9947a763e2a7745c807, type: 3}
       propertyPath: m_Name
