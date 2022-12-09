@@ -7126,8 +7126,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 52e0690ae7090524897612f78f42af6a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  damageAmount: 50
-  fireRate: 6
+  damageAmount: 20
+  fireRate: 12
   force: 80
   magazine: 30
   amo: 90
@@ -11320,11 +11320,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 52e0690ae7090524897612f78f42af6a, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  damageAmount: 0
+  damageAmount: 20
   fireRate: 2
   force: 80
-  magazine: 30
-  amo: 0
+  magazine: 10
+  amo: 30
   mags: 3
   isGrounded: 0
   fireSpot: {fileID: 2183400777150173363}
@@ -26042,6 +26042,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   animator: {fileID: 4555417115464249569}
   verticalInput: 0
+  playerName: Ai
   health: 100
   playerController: {fileID: 0}
   agent: {fileID: 0}

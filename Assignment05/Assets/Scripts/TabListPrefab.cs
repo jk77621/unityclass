@@ -13,4 +13,14 @@ public class TabListPrefab : MonoBehaviour
         kills.text = kill.ToString();
         deaths.text = death.ToString();
     }
+
+    public void setUpKill()
+    {
+        kills.text = (int.Parse(kills.text) + 1).ToString();
+    }
+
+    public void setUpDeath()
+    {
+        deaths.text = (int.Parse(deaths.text) + 1).ToString();
+    }
 }

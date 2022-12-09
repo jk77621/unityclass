@@ -8,6 +8,7 @@ public class PlayerController : MonoBehaviour
     [Header("animator")]
     public Animator animator;
 
+    public string playerName = "Player";
     public float health = 100f;
 
     private InputManager inputManager;
@@ -24,7 +25,7 @@ public class PlayerController : MonoBehaviour
     public float jumpForce = 200f, movementSpeed = 12f, gravityForce = -9.81f;
     [Range(0.1f, 5f)] public float mouseSensitivity = 0.7f;
 
-    private Vector3 movement, gravity;
+    private Vector3 movementVector, gravity;
     private WeaponController currentWeapon;
     private GameManager gameManager;
 
@@ -42,9 +43,9 @@ public class PlayerController : MonoBehaviour
         switchWeapons(0);
 
         uiManager.setHealth("100");
-        uiManager.setMoney("800000000");
+        uiManager.setMoney("$100");
         uiManager.setWeaponToDisplay(0);
-        setUiAmmo(0, 0);
+        uiManager.setAmo("0/0");
     }
 
     private void FixedUpdate()
@@ -54,8 +55,8 @@ public class PlayerController : MonoBehaviour
 
 
 
-        movement = transform.right * inputManager.horizontal + transform.forward * inputManager.vertical;
-        characterController.Move(movement * movementSpeed * Time.deltaTime);
+        movementVector = transform.right * inputManager.horizontal + transform.forward * inputManager.vertical;
+        characterController.Move(movementVector * movementSpeed * Time.deltaTime);
         if (isGrounded() && gravity.y < 0)
             gravity.y = -2;
 
@@ -84,6 +85,7 @@ public class PlayerController : MonoBehaviour
         }
         catch { }
 
+        uiManager.setHealth(health + "");
         uiManager.setAmo(currentWeapon.magazine + "/" + currentWeapon.amo);
     }
 
@@ -104,11 +106,6 @@ public class PlayerController : MonoBehaviour
         else return false;
     }
 
-    public void setUiAmmo(int a, int b)
-    {
-        uiManager.setAmo(a + "/" + b);
-    }
-
     private void OnGUI()
     {
         GUI.contentColor = Color.green;
@@ -126,9 +123,9 @@ public class PlayerController : MonoBehaviour
         currentWeapon = weapons[j].transform.GetChild(0).gameObject.GetComponent<WeaponController>();
     }
 
-    public void die()
+    public void die(GameObject shooter)
     {
-        gameManager.deadPlayer(gameObject);
+        gameManager.deadPlayer(shooter, gameObject);
         Destroy(gameObject);
     }
 }

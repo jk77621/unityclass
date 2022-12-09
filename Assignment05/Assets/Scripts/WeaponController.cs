@@ -27,6 +27,7 @@ public class WeaponController : MonoBehaviour
     private Animator animations;
     private InputManager inputManager;
     private TakeDamage takeDamage;
+    private GameObject shooter;
 
     public float reloadAnimationTime = 2.5f;
     private float reloadTime = 0;
@@ -40,6 +41,7 @@ public class WeaponController : MonoBehaviour
         //uiManager = GameObject.FindGameObjectWithTag("UISystem").GetComponent<UiManager>();
         animations = GetComponent<Animator>();
         inputManager = GetComponent<InputManager>();
+        shooter = GetComponentInParent<PlayerController>().transform.gameObject;
         animations.SetInteger("Movement", 0);
         amo = magazine * mags;
         magazineTamp = magazine;
@@ -60,15 +62,7 @@ public class WeaponController : MonoBehaviour
             animations.SetInteger("Movement", ((inputManager.vertical != 0 && isGrounded) || (inputManager.horizontal != 0 && isGrounded)) ? 1 : 0);
         }
 
-        //if (Input.GetButton("Fire1") && Time.time >= readyToFire && !isReloading && magazine > 0)
-        //{
-        //    readyToFire = Time.time + 1f / fireRate;
-        //    fire();
-        //    animations.SetInteger("Fire", 2);
-        //    animations.SetInteger("Movement", -1);
-        //}
-
-        if (Input.GetKeyDown(KeyCode.R) && !isReloading && amo > 0)
+        if ((Input.GetKeyDown(KeyCode.R) && !isReloading && amo > 0) || (magazine <= 0 && !isReloading && amo > 0))
         {
             reloadTime = reloadAnimationTime;
             animations.SetInteger("Reload", 1);
@@ -80,7 +74,7 @@ public class WeaponController : MonoBehaviour
             reloadTime = 0;
             animations.SetInteger("Reload", -1);
             isReloading = false;
-            amo = amo - 30 + magazine;
+            amo = amo - magazineTamp + magazine;
             magazine = magazineTamp;
             if (amo < 0)
             {
@@ -132,13 +126,13 @@ public class WeaponController : MonoBehaviour
             switch (takeDamage.damageType)
             {
                 case TakeDamage.collisionType.head:
-                    takeDamage.HIT(damageAmount);
+                    takeDamage.HIT(damageAmount, shooter);
                     break;
                 case TakeDamage.collisionType.body:
-                    takeDamage.HIT(damageAmount / 2);
+                    takeDamage.HIT(damageAmount / 2, shooter);
                     break;
                 case TakeDamage.collisionType.arms:
-                    takeDamage.HIT(damageAmount / 4);
+                    takeDamage.HIT(damageAmount / 4, shooter);
                     break;
             }
 
@@ -155,6 +149,7 @@ public class WeaponController : MonoBehaviour
         source.clip = clip;
         source.loop = false;
         source.playOnAwake = false;
+        source.volume = 1f;
 
         return source;
     }

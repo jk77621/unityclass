@@ -19,7 +19,7 @@ public class TakeDamage : MonoBehaviour
         if (aiController == null) aiController = gameObject.transform.root.GetComponent<AiController>();
     }
 
-    public void HIT(float value)
+    public void HIT(float value, GameObject shooter)
     {
         try
         {
@@ -27,13 +27,13 @@ public class TakeDamage : MonoBehaviour
             {
                 aiController.health -= value;
                 if (aiController.health <= 0)
-                    aiController.die();
+                    aiController.die(shooter);
             }
             else
             {
                 playerController.health -= value;
                 if (playerController.health <= 0)
-                    playerController.die();
+                    playerController.die(shooter);
             }
         }
         catch

@@ -692,6 +692,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   animator: {fileID: 4660123026652430600}
+  playerName: Player
   health: 100
   cameraObject: {fileID: 5167026404099449876}
   spine: {fileID: 4660123027394393214}
@@ -1218,7 +1219,7 @@ MonoBehaviour:
   fireRate: 12
   force: 80
   magazine: 30
-  amo: 0
+  amo: 90
   mags: 3
   isGrounded: 0
   fireSpot: {fileID: 8718656006552269787}
@@ -6626,11 +6627,11 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 51e1cddef6bf28e4cbca3f142ce3872c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  damageAmount: 0
+  damageAmount: 50
   fireRate: 2
   force: 80
-  magazine: 30
-  amo: 0
+  magazine: 10
+  amo: 30
   mags: 3
   isGrounded: 0
   fireSpot: {fileID: 8718656006552269787}

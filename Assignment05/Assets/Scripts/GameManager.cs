@@ -2,12 +2,14 @@ using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
 using UnityEngine.UI;
+using UnityStandardAssets.Utility;
 
 public class GameManager : MonoBehaviour
 {
     public GameObject PlayerLayer;
-    public GameObject tabMenuList1, tabMenuListFolder1;
-    public GameObject tabMenuList2, tabMenuListFolder2;
+    public GameObject pauseMenuList, pauseMenuListFolder;
+    public GameObject tabMenuList, tabMenuListFolder;
+    public GameObject kilroggMenuList, kilroggMenuListFolder;
 
     [Header("rules")]
     public int minutes;
@@ -47,9 +49,9 @@ public class GameManager : MonoBehaviour
 
         pauseGame();
         resumeGame();
+        spawnAiPlayers();
         createPauseUI();
         createTabUI();
-        spawnAiPlayers();
     }
 
     void FixedUpdate()
@@ -106,28 +108,42 @@ public class GameManager : MonoBehaviour
     private void createPauseUI()
     {
         float yPosition = 105;
-        for (int i = 0; i < 5; i++)
+        GameObject sample1 = Instantiate(pauseMenuList);
+        PlayerController pController = PlayerGameObject.GetComponent<PlayerController>();
+        sample1.transform.parent = pauseMenuListFolder.transform;
+        sample1.transform.localScale = new Vector3(1, 1, 1);
+        sample1.transform.localPosition = new Vector3(0, yPosition, 0);
+        sample1.transform.gameObject.GetComponent<TabListPrefab>().setUpPlayerList(pController.playerName, 0, 0);
+
+        for (int i = 0; i < playerAmount; i++)
         {
-            GameObject sample = Instantiate(tabMenuList1);
-            sample.transform.parent = tabMenuListFolder1.transform;
-            sample.transform.localScale = new Vector3(1, 1, 1);
-            sample.transform.localPosition = new Vector3(0, yPosition, 0);
-            sample.transform.gameObject.GetComponent<TabListPrefab>().setUpPlayerList("player" + i, i * 4, i * 2);
-            yPosition -= 52;
+            GameObject sample2 = Instantiate(pauseMenuList);
+            AiController aController = aiPlayers[i].GetComponent<AiController>();
+            sample2.transform.parent = pauseMenuListFolder.transform;
+            sample2.transform.localScale = new Vector3(1, 1, 1);
+            sample2.transform.localPosition = new Vector3(0, yPosition - (52 * (i + 1)), 0);
+            sample2.transform.gameObject.GetComponent<TabListPrefab>().setUpPlayerList(aController.playerName, 0, 0);
         }
-    }    
+    }
 
     private void createTabUI()
     {
         float yPosition = 105;
-        for (int i = 0; i < 5; i++)
+        GameObject sample1 = Instantiate(tabMenuList);
+        PlayerController pController = PlayerGameObject.GetComponent<PlayerController>();
+        sample1.transform.parent = tabMenuListFolder.transform;
+        sample1.transform.localScale = new Vector3(1, 1, 1);
+        sample1.transform.localPosition = new Vector3(0, yPosition, 0);
+        sample1.transform.gameObject.GetComponent<TabListPrefab>().setUpPlayerList(pController.playerName, 0, 0);
+
+        for (int i = 0; i < playerAmount; i++)
         {
-            GameObject sample = Instantiate(tabMenuList2);
-            sample.transform.parent = tabMenuListFolder2.transform;
-            sample.transform.localScale = new Vector3(1, 1, 1);
-            sample.transform.localPosition = new Vector3(0, yPosition, 0);
-            sample.transform.gameObject.GetComponent<TabListPrefab>().setUpPlayerList("player" + i, i * 4, i * 2);
-            yPosition -= 52;
+            GameObject sample2 = Instantiate(tabMenuList);
+            AiController aController = aiPlayers[i].GetComponent<AiController>();
+            sample2.transform.parent = tabMenuListFolder.transform;
+            sample2.transform.localScale = new Vector3(1, 1, 1);
+            sample2.transform.localPosition = new Vector3(0, yPosition - (52 * (i + 1)), 0);
+            sample2.transform.gameObject.GetComponent<TabListPrefab>().setUpPlayerList(aController.playerName, 0, 0);
         }
     }
 
@@ -136,23 +152,102 @@ public class GameManager : MonoBehaviour
         for (int i = 0; i < playerAmount; i++)
         {
             GameObject player = Instantiate(AiPlayer, spawnPointsArray[i].transform.position, Quaternion.identity);
-            aiPlayers[i] = player;
+            AiController contoller = player.GetComponent<AiController>();
             player.transform.parent = AiContainer.transform;
+            contoller.playerName = "Ai" + i;
+            aiPlayers[i] = player;
         }
     }
 
-    public void deadPlayer(GameObject g)
+    public void deadPlayer(GameObject shooter, GameObject hitPerson)
     {
-        if (g.tag == "AI")
+        string shooterName;
+        string hitPersonName;
+
+        if (shooter.tag == "AI")
         {
-            GameObject r = Instantiate(AiPlayer, spawnPointsArray[Random.Range(0, 8)].transform.position, Quaternion.identity);
-            r.transform.parent = AiContainer.transform;
-            Destroy(g);
+            AiController controller = shooter.GetComponent<AiController>();
+            shooterName = controller.playerName;
         }
         else
         {
-            GameObject r = Instantiate(PlayerGameObject, playerSpawnPosition.transform.position, Quaternion.identity);
-            Destroy(g);
+            PlayerController controller = shooter.GetComponent<PlayerController>();
+            shooterName = controller.playerName;
+        }
+
+
+
+        if (hitPerson.tag == "AI")
+        {
+            AiController controller1 = hitPerson.GetComponent<AiController>();
+            hitPersonName = controller1.playerName;
+
+            GameObject player = Instantiate(AiPlayer, spawnPointsArray[Random.Range(0, 8)].transform.position, Quaternion.identity);
+            AiController contoller2 = player.GetComponent<AiController>();
+            player.transform.parent = AiContainer.transform;
+            contoller2.playerName = controller1.playerName;
+        }
+        else
+        {
+            PlayerController controller1 = hitPerson.GetComponent<PlayerController>();
+            hitPersonName = controller1.playerName;
+
+            GameObject player = Instantiate(PlayerGameObject, playerSpawnPosition.transform.position, Quaternion.identity);
+            PlayerController contoller2 = player.GetComponent<PlayerController>();
+            contoller2.playerName = controller1.playerName;
+        }
+
+
+        Debug.Log(shooterName + " // " + hitPersonName);
+
+        setUpKillDeath(shooterName, hitPersonName);
+        StartCoroutine(createKilroggUI(shooterName, hitPersonName));
+
+        Destroy(hitPerson);
+    }
+
+    IEnumerator createKilroggUI(string shooterName, string hitPersonName)
+    {
+        float yPosition = 0;
+        GameObject sample1 = Instantiate(kilroggMenuList);
+        sample1.transform.parent = kilroggMenuListFolder.transform;
+        sample1.transform.localScale = new Vector3(1, 1, 1);
+        sample1.transform.localPosition = new Vector3(0, yPosition, 0);
+        sample1.transform.gameObject.GetComponent<KilroggListPrefab>().setUpKilroggList(shooterName, hitPersonName);
+
+        int j = kilroggMenuListFolder.transform.childCount - 1;
+        for (int i = 0; i < kilroggMenuListFolder.transform.childCount; i++)
+        {
+            GameObject sample2 = kilroggMenuListFolder.transform.GetChild(i).gameObject;
+            sample2.transform.localPosition = new Vector3(0, yPosition - (32 * j), 0);
+            j--;
+        }
+
+        yield return new WaitForSeconds(2.0f);
+
+        Destroy(sample1);
+    }
+
+
+    private void setUpKillDeath(string shooterName, string hitPersonName)
+    {
+        for (int i = 0; i < pauseMenuListFolder.transform.childCount; i++)
+        {
+            GameObject sample = pauseMenuListFolder.transform.GetChild(i).gameObject;
+            if (sample.GetComponent<TabListPrefab>().playerName.text == shooterName)
+                sample.GetComponent<TabListPrefab>().setUpKill();
+            if (sample.GetComponent<TabListPrefab>().playerName.text == hitPersonName)
+                sample.GetComponent<TabListPrefab>().setUpDeath();
+        }
+
+        for (int i = 0; i < tabMenuListFolder.transform.childCount; i++)
+        {
+            GameObject sample = tabMenuListFolder.transform.GetChild(i).gameObject;
+            if (sample.GetComponent<TabListPrefab>().playerName.text == shooterName)
+                sample.GetComponent<TabListPrefab>().setUpKill();
+            if (sample.GetComponent<TabListPrefab>().playerName.text == hitPersonName)
+                sample.GetComponent<TabListPrefab>().setUpDeath();
         }
     }
+
 }

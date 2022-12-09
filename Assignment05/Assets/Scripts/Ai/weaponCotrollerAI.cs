@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using UnityStandardAssets.Vehicles.Car;
 
 public class weaponCotrollerAI : MonoBehaviour
 {
@@ -26,8 +27,9 @@ public class weaponCotrollerAI : MonoBehaviour
     public AudioSource landAudioSource;
 
     private Animator animations;
-    private InputManager inputManager;
+    private AiController aiController;
     private TakeDamage takeDamage;
+    private GameObject shooter;
 
     public float reloadAnimationTime = 2.5f;
     private float reloadTime = 0;
@@ -40,7 +42,8 @@ public class weaponCotrollerAI : MonoBehaviour
     {
         //uiManager = GameObject.FindGameObjectWithTag("UISystem").GetComponent<UiManager>();
         animations = GetComponent<Animator>();
-        inputManager = GetComponent<InputManager>();
+        aiController = GetComponentInParent<AiController>();
+        shooter = GetComponentInParent<AiController>().transform.gameObject;
         animations.SetInteger("Movement", 0);
         amo = magazine * mags;
         magazineTamp = magazine;
@@ -55,7 +58,13 @@ public class weaponCotrollerAI : MonoBehaviour
 
     private void Update()
     {
-        if (Input.GetKeyDown(KeyCode.R) && !isReloading && amo > 0)
+        if (Time.time >= readyToFire)
+        {
+            animations.SetInteger("Fire", -1);
+            animations.SetInteger("Movement", aiController.verticalInput != 0 && isGrounded ? 1 : 0);
+        }
+
+        if (magazine <= 0 && !isReloading && amo > 0)
         {
             reloadTime = reloadAnimationTime;
             animations.SetInteger("Reload", 1);
@@ -67,7 +76,7 @@ public class weaponCotrollerAI : MonoBehaviour
             reloadTime = 0;
             animations.SetInteger("Reload", -1);
             isReloading = false;
-            amo = amo - 30 + magazine;
+            amo = amo - magazineTamp + magazine;
             magazine = magazineTamp;
             if (amo < 0)
             {
@@ -79,7 +88,6 @@ public class weaponCotrollerAI : MonoBehaviour
         }
         else
         {
-
             reloadTime -= Time.deltaTime;
         }
 
@@ -120,13 +128,13 @@ public class weaponCotrollerAI : MonoBehaviour
             switch (takeDamage.damageType)
             {
                 case TakeDamage.collisionType.head:
-                    takeDamage.HIT(damageAmount);
+                    takeDamage.HIT(damageAmount, shooter);
                     break;
                 case TakeDamage.collisionType.body:
-                    takeDamage.HIT(damageAmount / 2);
+                    takeDamage.HIT(damageAmount / 2, shooter);
                     break;
                 case TakeDamage.collisionType.arms:
-                    takeDamage.HIT(damageAmount / 4);
+                    takeDamage.HIT(damageAmount / 4, shooter);
                     break;
             }
 

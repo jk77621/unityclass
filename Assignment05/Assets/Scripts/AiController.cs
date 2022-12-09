@@ -11,6 +11,7 @@ public class AiController : MonoBehaviour
     [Header("AIInputs")]
     public float verticalInput = 0;
 
+    public string playerName = "Ai";
     public float health = 100f;
 
     public PlayerController playerController;
@@ -134,8 +135,11 @@ public class AiController : MonoBehaviour
             //spine.transform.localRotation *= Quaternion.Euler((-mouseX * mouseSensitivity / 2), 0f , 0f);
         }
 
-
-
+        try
+        {
+            weaponControllerAI.isGrounded = isGrounded();
+        }
+        catch { }
     }
 
     public void jump()
@@ -155,9 +159,9 @@ public class AiController : MonoBehaviour
         else return false;
     }
 
-    public void die()
+    public void die(GameObject shooter)
     {
-        gameManager.deadPlayer(gameObject);
+        gameManager.deadPlayer(shooter, gameObject);
         Destroy(gameObject);
     }
 
