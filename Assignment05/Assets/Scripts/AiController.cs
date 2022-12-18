@@ -1,6 +1,7 @@
 ﻿using UnityEngine;
 using System.Collections;
 using UnityEngine.AI;
+using System.Collections.Generic;
 
 public class AiController : MonoBehaviour
 {
@@ -36,6 +37,10 @@ public class AiController : MonoBehaviour
     public float forwardMovement, rightMovement;
     public float mouseX, mouseY;
 
+    // ragdoll physics
+    private Rigidbody[] rBodies;
+    private bool dying = false;
+
     // camp points
     public float campPointDistance;
     public campPint[] campPints;
@@ -57,12 +62,34 @@ public class AiController : MonoBehaviour
         localMaxDistance = campMaxDistance;
 
         startTimer = Time.time + startTimer;
+
+        findValues();
+    }
+
+    void findValues()
+    {
+        Rigidbody[] rigidbodies = FindObjectsOfType<Rigidbody>();
+        List<Rigidbody> aa = new List<Rigidbody>();
+        for (int i = 0; i < rigidbodies.Length; i++)
+        {
+            if (rigidbodies[i].transform.root == transform)
+            {
+                aa.Add(rigidbodies[i]);
+                rigidbodies[i].isKinematic = true;
+                rigidbodies[i].drag = 1;
+            }
+        }
+
+        //int[] res = ss.OfType<int>.ToArray();
+
+        rBodies = aa.ToArray();
     }
 
     public float sensorDistance = 100, playerCurrentDistance = 0;
 
     void Update()
     {
+        if (dying) return;
         if (playerController == null) playerController = FindObjectOfType<PlayerController>();
 
         aimingMethod();
@@ -70,6 +97,7 @@ public class AiController : MonoBehaviour
 
     private void FixedUpdate()
     {
+        if (dying) return;
         //if(Time.time <= startTimer)return;
         if (playerController == null) return;
 
@@ -161,8 +189,24 @@ public class AiController : MonoBehaviour
 
     public void die(GameObject shooter)
     {
+        StartCoroutine(dyingMethod(shooter));
+    }
+
+    IEnumerator dyingMethod(GameObject shooter)
+    {
+        dying = true;
+        animator.enabled = false;
+        characterController.enabled = false;
+        agent.enabled = false;
+        foreach (var item in rBodies)
+        {
+            item.isKinematic = false;
+        }
+
+        yield return new WaitForSeconds(2.0f);
+
         gameManager.deadPlayer(shooter, gameObject);
-        Destroy(gameObject);
+        //Destroy(gameObject);
     }
 
     public void Roam()

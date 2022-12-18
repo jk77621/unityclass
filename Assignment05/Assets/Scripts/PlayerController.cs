@@ -126,6 +126,6 @@ public class PlayerController : MonoBehaviour
     public void die(GameObject shooter)
     {
         gameManager.deadPlayer(shooter, gameObject);
-        Destroy(gameObject);
+        //Destroy(gameObject);
     }
 }

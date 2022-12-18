@@ -15,6 +15,7 @@ public class weaponCotrollerAI : MonoBehaviour
     public GameObject fireSpot;
     public ParticleSystem flash;
     public GameObject bulletEffect;
+    public GameObject bloodEffect;
 
     public AudioClip fireAudioClip;
     public AudioClip reloadAudioClip;
@@ -120,11 +121,20 @@ public class weaponCotrollerAI : MonoBehaviour
     {
         if (hit.rigidbody != null)
             hit.rigidbody.AddForce(-hit.normal * force);
-        Instantiate(bulletEffect, hit.point, Quaternion.LookRotation(hit.normal));
 
         try
         {
             takeDamage = hit.transform.GetComponent<TakeDamage>();
+
+            if (takeDamage != null)
+            {
+                Instantiate(bloodEffect, hit.point, Quaternion.LookRotation(hit.normal));
+            }
+            else
+            {
+                Instantiate(bulletEffect, hit.point, Quaternion.LookRotation(hit.normal));
+            }
+
             switch (takeDamage.damageType)
             {
                 case TakeDamage.collisionType.head:
